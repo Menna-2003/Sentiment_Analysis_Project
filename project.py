@@ -101,9 +101,46 @@ def predict_sentiment_RNN(input_text, vectorizer, model):
     predicted_sentiment = sentiment_labels[predicted_class]
     return predicted_sentiment
 
-menu=st.sidebar.radio("Menu",["Naive","RNN","Graphs","About Us"])
+menu=st.sidebar.radio("Menu",["Home","Naive","RNN","Graphs","About Us"])
 
-if menu=="Naive":
+if menu=="Home":
+    st.title("Sentiment Analysis Project Using AI Classification")
+    st.write("---")
+
+    st.write("""
+    This project aims to develop a system that analyzes the sentiment (positive, negative, neutral) of text data stored in a CSV database. The key objectives include:
+    - **Analyzing customer reviews** to understand their sentiment towards products, services, or brand image.
+    - **Tracking sentiment trends on social media** to identify potential brand reputation issues.
+    - **Refining marketing campaigns** by analyzing customer sentiment to better target specific audience segments.
+    """)
+    st.write("---")
+
+    st.subheader("Data Preprocessing")
+    st.write("The following preprocessing steps were implemented:")
+    st.write("- Removing punctuation")
+    st.write("- Removing stop words")
+    st.write("- Lemmatization")
+
+    st.write("---")
+    st.subheader("Feature Engineering")
+    st.write("We employed the TF-IDF method for feature extraction.")
+
+    st.write("---")
+    st.subheader("Model Selection and Training")
+    st.write("We experimented with several models, including:")
+    st.write("- Support Vector Machine (SVM)")
+    st.write("- Naive Bayes")
+    st.write("- Logistic Regression")
+    st.write("- Recurrent Neural Networks (RNN)")
+    st.write("Among these, Naive Bayes and RNN yielded the best results.")
+
+    st.write("---")
+    st.subheader("Dataset Overview")
+    st.write("Here is a preview of the dataset:")
+    st.dataframe(data)
+
+
+elif menu=="Naive":
     st.title("Naive model")
     st.write("Here you can write any text and you will get analysis for it")
     st.write("---")
@@ -167,6 +204,13 @@ elif menu=="RNN":
     st.write("Model Test Accuracy : 0.90163")
 
     st.write("---")
+    st.subheader("Train Confusion Matrix")
+    rnn_train = Image.open('rnn_train.png')
+    st.image(rnn_train, width=600)
+
+    st.subheader("Test Confusion Matrix")
+    rnn_test = Image.open('rnn_test.png')
+    st.image(rnn_test, width=600)
 
 elif menu=="Graphs":
     st.title("Graphs")
