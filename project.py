@@ -172,8 +172,8 @@ elif menu=="Naive":
         st.balloons()
     st.write("---")
 
-    st.write("Model Train Accuracy : 0.9982905982905983")
-    st.write("Model Test Accuracy : 0.9251700680272109")
+    st.write("Model Train Accuracy : 0.9743589743589743")
+    st.write("Model Test Accuracy : 0.9319727891156463")
 
     st.write("---")
     st.subheader("Train Confusion Matrix")
