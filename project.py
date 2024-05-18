@@ -128,18 +128,22 @@ if menu=="Naive":
         predicted_sentiment = sentiment_labels[predicted_class]
         
         st.write("Predicted Sentiment:", predicted_sentiment)
-        st.balloons()
         # Load and play the audio file
         with open(audio_file_path, "rb") as audio_file:
             audio_bytes = audio_file.read()
             st.audio(audio_bytes, format='audio/m4a',autoplay=True)
+        st.balloons()
+    st.write("---")
+
+    st.write("Model Train Accuracy : 0.9982905982905983")
+    st.write("Model Test Accuracy : 0.9251700680272109")
 
     st.write("---")
-    st.write("Train Confusion Matrix for Naive")
+    st.subheader("Train Confusion Matrix")
     Train_Confusion_Naive = Image.open('Train_Confusion_Naive.png')
     st.image(Train_Confusion_Naive, width=600)
 
-    st.write("Test Confusion Matrix for Naive")
+    st.subheader("Test Confusion Matrix")
     Test_Confusion_Naive = Image.open('Test_Confusion_Naive.png')
     st.image(Test_Confusion_Naive, width=600)
     
@@ -151,11 +155,18 @@ elif menu=="RNN":
     if input_text:
         predicted_sentiment = predict_sentiment_RNN(input_text, vectorizer, RNN_Model)
         st.write(f"Predicted Sentiment: {predicted_sentiment}")
-        st.balloons()
         # Load and play the audio file
         with open(audio_file_path, "rb") as audio_file:
             audio_bytes = audio_file.read()
             st.audio(audio_bytes, format='audio/m4a',autoplay=True)
+        st.balloons()
+
+    st.write("---")
+
+    st.write("Model Train Accuracy : 0.9991")
+    st.write("Model Test Accuracy : 0.90163")
+
+    st.write("---")
 
 elif menu=="Graphs":
     st.title("Graphs")
@@ -179,9 +190,9 @@ elif menu=="Graphs":
 
 elif menu=="About Us":
     us = {
-    'Name': ["Menna", "Menna", "Menna", "Menna"],
-    'Id': [446,446,446,446],
-    'Level': [2,2,2,2]
+    'Name': ["Menna Mohamed", "Mohamed Akram", "Mostafa Mohamed", "Kareem Essam","Youssef Ahmed","Kareem Hatem"],
+    'Id': [2022170446,2022170355,2022170424,2022170594,2022170504,2022170311],
+    'Level': [2,2,2,2,2,2]
     }      
     # Create a DataFrame
     ustable = pd.DataFrame(us)
