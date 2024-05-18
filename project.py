@@ -38,6 +38,22 @@ LR_model = joblib.load('LR_model.pkl')
 vectorizer = joblib.load('vectorizer.pkl')
 
 
+stop_words = set(stopwords.words('english'))
+stemmer = PorterStemmer()
+
+def preprocess_text_naive(text):
+    # Tokenization
+    tokens = word_tokenize(text)
+
+    # Removing punctuation and lowercasing
+    tokens = [word.lower() for word in tokens if word.isalnum()]
+
+    # Removing stopwords
+    tokens = [word for word in tokens if word not in stop_words]
+
+
+    return tokens
+
 def Lemma(tokens):
     if(tokens==None):
         warnings.warn("Text is invalid",UserWarning)
@@ -87,31 +103,13 @@ def predict_sentiment_RNN(input_text, vectorizer, model):
 
 menu=st.sidebar.radio("Menu",["Naive","RNN","Graphs","About Us"])
 
-# if menu=="SVM":
-#     st.title("SVM model")
-#     st.write("Here you can write any text and you will get analysis for it")
-#     st.write("---")
-#     input_text = st.text_input("Enter your text here")
-#     if input_text:
-#         predicted_sentiment = predict_sentiment(input_text)
-#         st.write(f"Predicted Sentiment: {predicted_sentiment}")
-    
-# elif menu=="Logistic Regression":
-#     st.title("Logistic Regression model")
-#     st.write("Here you can write any text and you will get analysis for it")
-#     st.write("---")
-#     input_text = st.text_input("Enter your text here")
-#     # if input_text:
-#     #     predicted_sentiment = predict_sentiment_RNN(input_text, vectorizer, LR_model)
-#     #     st.write(f"Predicted Sentiment: {predicted_sentiment}")
-    
 if menu=="Naive":
     st.title("Naive model")
     st.write("Here you can write any text and you will get analysis for it")
     st.write("---")
     input_text = st.text_input("Enter your text here")
     if input_text:
-        input_text=preprocess_text(input_text)
+        input_text=preprocess_text_naive(input_text)
         input_text=Lemma(input_text)
 
         # Convert to DataFrame for joining tokens
@@ -126,11 +124,24 @@ if menu=="Naive":
         # Predict the class of the joined text
         predicted_class = predict_sentiment_NAIVE(joined_text)
 
-        # sentiment_labels = {0: 'Negative', 1: 'Neutral', 2: 'Positive'}
-        # predicted_sentiment = sentiment_labels[predicted_class]
+        sentiment_labels = {0: 'Negative', 1: 'Neutral', 2: 'Positive'}
+        predicted_sentiment = sentiment_labels[predicted_class]
         
-        st.write("Predicted Sentiment:", predicted_class)
+        st.write("Predicted Sentiment:", predicted_sentiment)
         st.balloons()
+        # Load and play the audio file
+        with open(audio_file_path, "rb") as audio_file:
+            audio_bytes = audio_file.read()
+            st.audio(audio_bytes, format='audio/m4a',autoplay=True)
+
+    st.write("---")
+    st.write("Train Confusion Matrix for Naive")
+    Train_Confusion_Naive = Image.open('Train_Confusion_Naive.png')
+    st.image(Train_Confusion_Naive, width=600)
+
+    st.write("Test Confusion Matrix for Naive")
+    Test_Confusion_Naive = Image.open('Test_Confusion_Naive.png')
+    st.image(Test_Confusion_Naive, width=600)
     
 elif menu=="RNN":
     st.title("RNN model")
@@ -141,17 +152,16 @@ elif menu=="RNN":
         predicted_sentiment = predict_sentiment_RNN(input_text, vectorizer, RNN_Model)
         st.write(f"Predicted Sentiment: {predicted_sentiment}")
         st.balloons()
-        # # Load and play the audio file
-        # with open(audio_file_path, "rb") as audio_file:
-        #     audio_bytes = audio_file.read()
-        #     st.audio(audio_bytes, format='audio/m4a',autoplay=True)
+        # Load and play the audio file
+        with open(audio_file_path, "rb") as audio_file:
+            audio_bytes = audio_file.read()
+            st.audio(audio_bytes, format='audio/m4a',autoplay=True)
 
 elif menu=="Graphs":
     st.title("Graphs")
     st.write("Here you can see all graphs of the project")
     st.write("---")
 
-    # st.write("Distribution By Source")
     distributionBySource = Image.open('distributionBySource.png')
     st.image(distributionBySource, use_column_width=True)
 
