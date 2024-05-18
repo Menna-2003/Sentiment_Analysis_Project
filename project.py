@@ -98,6 +98,7 @@ elif menu=="RNN":
     if input_text:
         predicted_sentiment = predict_sentiment_RNN(input_text, vectorizer, RNN_Model)
         st.write(f"Predicted Sentiment: {predicted_sentiment}")
+        st.balloons()
 
 elif menu=="Graphs":
     st.title("Graphs")
