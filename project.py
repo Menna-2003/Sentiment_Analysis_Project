@@ -1,9 +1,12 @@
 import streamlit as st
 from PIL import Image
+import pickle
+import warnings
 from tensorflow.keras.models import load_model, Sequential
 from tensorflow.keras.layers import Dense
 import pandas as pd
 import numpy as np
+import os
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
@@ -14,14 +17,17 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from sklearn.feature_extraction.text import TfidfVectorizer
-import string
 import joblib
+import string
 nltk.download('averaged_perceptron_tagger')
 # Download NLTK resources
 nltk.download('vader_lexicon')
 nltk.download('punkt')
 nltk.download('stopwords')
 nltk.download('wordnet')
+
+# Specify the path to your local audio file
+audio_file_path = "Audience Clapping - Sound Effect(M4A_128K).m4a"
 
 data = pd.read_csv("sentimentdataset.csv")
 # Load the model and vectorizer
@@ -30,6 +36,35 @@ SVM_model = joblib.load('SVM_model.pkl')
 naive_bayes_model = joblib.load('naive_bayes_model.pkl')
 LR_model = joblib.load('LR_model.pkl')
 vectorizer = joblib.load('vectorizer.pkl')
+
+
+def Lemma(tokens):
+    if(tokens==None):
+        warnings.warn("Text is invalid",UserWarning)
+    lemmatizer = WordNetLemmatizer()
+    lemmatized_words = [lemmatizer.lemmatize(token) for token in tokens]
+    return lemmatized_words
+
+def join_tokens(tokenized_column):
+    return tokenized_column.apply(lambda x: ' '.join(x))
+
+# Function to predict a new text
+def predict_sentiment_NAIVE(text):
+    # Load the model and the vectorizer
+    with open('multinomial_naive.pkl', 'rb') as model_file:
+        loaded_model = pickle.load(model_file)
+
+    with open('tfidf_vectorizer.pkl', 'rb') as vectorizer_file:
+        loaded_vectorizer = pickle.load(vectorizer_file)
+
+    #Transform the text using the loaded vectorizer
+    text_tfidf = loaded_vectorizer.transform([text])
+    text_arr = text_tfidf.toarray()
+
+    # Predict using the loaded model
+    prediction = loaded_model.predict(text_arr)
+
+    return prediction[0]
 
 # Preprocess the text
 def preprocess_text(text):
@@ -50,45 +85,52 @@ def predict_sentiment_RNN(input_text, vectorizer, model):
     predicted_sentiment = sentiment_labels[predicted_class]
     return predicted_sentiment
 
-# def predict_sentiment(input_text):
-#     processed_text = preprocess_text(input_text)
-#     text_tfidf = vectorizer.transform([processed_text])
-#     text_array = text_tfidf.toarray()
-#     predictions = SVM_model.predict(text_array)
+menu=st.sidebar.radio("Menu",["Naive","RNN","Graphs","About Us"])
 
-#     predicted_class = np.argmax(predictions[0])
-#     sentiment_labels = {0: 'Negative', 1: 'Neutral', 2: 'Positive'}
-#     predicted_sentiment = sentiment_labels[predicted_class]
-#     return predicted_sentiment
-
-menu=st.sidebar.radio("Menu",["SVM","Logistic Regression","Naive","RNN","Graphs","About Us"])
-
-if menu=="SVM":
-    st.title("SVM model")
-    st.write("Here you can write any text and you will get analysis for it")
-    st.write("---")
-    input_text = st.text_input("Enter your text here")
-    if input_text:
-        predicted_sentiment = predict_sentiment(input_text)
-        st.write(f"Predicted Sentiment: {predicted_sentiment}")
+# if menu=="SVM":
+#     st.title("SVM model")
+#     st.write("Here you can write any text and you will get analysis for it")
+#     st.write("---")
+#     input_text = st.text_input("Enter your text here")
+#     if input_text:
+#         predicted_sentiment = predict_sentiment(input_text)
+#         st.write(f"Predicted Sentiment: {predicted_sentiment}")
     
-elif menu=="Logistic Regression":
-    st.title("Logistic Regression model")
-    st.write("Here you can write any text and you will get analysis for it")
-    st.write("---")
-    input_text = st.text_input("Enter your text here")
-    # if input_text:
-    #     predicted_sentiment = predict_sentiment_RNN(input_text, vectorizer, LR_model)
-    #     st.write(f"Predicted Sentiment: {predicted_sentiment}")
+# elif menu=="Logistic Regression":
+#     st.title("Logistic Regression model")
+#     st.write("Here you can write any text and you will get analysis for it")
+#     st.write("---")
+#     input_text = st.text_input("Enter your text here")
+#     # if input_text:
+#     #     predicted_sentiment = predict_sentiment_RNN(input_text, vectorizer, LR_model)
+#     #     st.write(f"Predicted Sentiment: {predicted_sentiment}")
     
-elif menu=="Naive":
+if menu=="Naive":
     st.title("Naive model")
     st.write("Here you can write any text and you will get analysis for it")
     st.write("---")
     input_text = st.text_input("Enter your text here")
-    # if input_text:
-    #     predicted_sentiment = predict_sentiment_RNN(input_text,vectorizer,naive_bayes_model)
-    #     st.write("Predicted Sentiment:", predicted_sentiment)
+    if input_text:
+        input_text=preprocess_text(input_text)
+        input_text=Lemma(input_text)
+
+        # Convert to DataFrame for joining tokens
+        df = pd.DataFrame({'tokenized_text': [input_text]})
+
+        # Join tokens
+        df['joined_text'] = join_tokens(df['tokenized_text'])
+
+        # Extract joined text
+        joined_text = df['joined_text'].iloc[0]
+
+        # Predict the class of the joined text
+        predicted_class = predict_sentiment_NAIVE(joined_text)
+
+        # sentiment_labels = {0: 'Negative', 1: 'Neutral', 2: 'Positive'}
+        # predicted_sentiment = sentiment_labels[predicted_class]
+        
+        st.write("Predicted Sentiment:", predicted_class)
+        st.balloons()
     
 elif menu=="RNN":
     st.title("RNN model")
@@ -99,6 +141,10 @@ elif menu=="RNN":
         predicted_sentiment = predict_sentiment_RNN(input_text, vectorizer, RNN_Model)
         st.write(f"Predicted Sentiment: {predicted_sentiment}")
         st.balloons()
+        # # Load and play the audio file
+        # with open(audio_file_path, "rb") as audio_file:
+        #     audio_bytes = audio_file.read()
+        #     st.audio(audio_bytes, format='audio/m4a',autoplay=True)
 
 elif menu=="Graphs":
     st.title("Graphs")
